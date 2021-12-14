@@ -1,0 +1,17 @@
+MOVEMENT = [
+    ['NOOP'],
+    ['A'],
+    ['B'],
+    ['left'],
+    ['left', 'A'],
+    ['left', 'B'],
+    ['left', 'A', 'B'],
+    ['right'],
+    ['right', 'A'],
+    ['right', 'B'],
+    ['right', 'A', 'B'],
+    ['down'],
+    ['down', 'left'],
+    ['down', 'right'],
+    ['down', 'A'],
+]

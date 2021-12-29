@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 class MetricLogger :
     def __init__(self, save_dir) -> None:
-        self.save_log = save_dir / 'log.txt'
+        self.save_log = save_dir + '/log.txt'
 
         with open(self.save_log, 'w') as f :
             f.write(
@@ -18,10 +18,10 @@ class MetricLogger :
                 f'{"TimeDelta":>15}{"Time":>20} \n'
             )
         
-        self.ep_rewards_plot = save_dir / 'reward_plot.jpg'
-        self.ep_lengths_plot = save_dir / 'length_plot.jpg'
-        self.ep_avg_losses_plot = save_dir / 'loss_plot.jpg'
-        self.ep_avg_qs_plot = save_dir / 'q_plot.jpg'
+        self.ep_rewards_plot = save_dir + '/reward_plot.jpg'
+        self.ep_lengths_plot = save_dir + '/length_plot.jpg'
+        self.ep_avg_losses_plot = save_dir + '/loss_plot.jpg'
+        self.ep_avg_qs_plot = save_dir + '/q_plot.jpg'
 
         self.ep_rewards = []
         self.ep_lengths = []

@@ -125,8 +125,14 @@ class Mario :
         self.net.target.load_state_dict(self.net.online.state_dict())
 
     def save(self) :
-        save_path = os.path.join(self.save_dir, 'checkpoints', 'Mario_Net_{}.pt'.format(self.curr_step // self.save_rate))
+        save_path = self.save_dir + '/Mario_Net_{}.pt'.format(int(self.curr_step // self.save_rate))
 
         torch.save(dict(model=self.net.state_dict(), exploration_rate=self.exploration_rate), save_path)
 
         print('MarioNet saved to {} at step {}'.format(save_path, self.curr_step))
+
+    def load(self, model_path) :
+        checkpoint = torch.load(model_path)
+
+        self.net.load_state_dict(checkpoint['model'])
+        self.exploration_rate = checkpoint['exploration_rate']

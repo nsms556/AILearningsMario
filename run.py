@@ -1,5 +1,6 @@
 import datetime
 import os
+import argparse
 from pathlib import Path
 
 import torch
@@ -24,21 +25,25 @@ env = FrameStack(env, num_stack=4)
 
 env.reset()
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--checkpoint', required=False)
+args = parser.parse_args()
+
 use_cuda = torch.cuda.is_available()
 print('Use CUDA : {}'.format(use_cuda))
 print()
 
-save_dir = Path('./checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H%M%S')
-if not os.path.exists('./checkpoints/{}'.format(datetime.datetime.now().strftime('%Y-%m-%dT%H%M%S'))) :
-    save_dir.mkdir(parents=True)
-#save_dir = './checkpoints/{}'.format(datetime.datetime.now().strftime('%Y-%m-%dT%H%M%S'))
-#os.mkdir(save_dir)
+save_dir = './checkpoints/{}'.format(datetime.datetime.now().strftime('%Y-%m-%dT%H%M%S'))
+if not os.path.exists(save_dir) :
+    os.mkdir(save_dir)
 
 mario = Mario(state_dim=(4, 84, 84), action_dim=env.action_space.n, save_dir=save_dir)
+if args.checkpoint :
+    mario.load(args.checkpoint)
 
 logger = MetricLogger(save_dir)
 
-episodes = 10
+episodes = 1
 for e in range(episodes) :
     state = env.reset()
 
@@ -62,3 +67,5 @@ for e in range(episodes) :
 
     if e % 5 == 0 :
         logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
+
+mario.save()

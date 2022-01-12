@@ -36,7 +36,7 @@ class Mario :
         self.optimizer = optim.Adam(self.net.parameters(), lr=0.00025)
         self.loss_fn = nn.SmoothL1Loss()
 
-        self.burnin = 1e4
+        self.burnin = 5000
         self.learn_rate = 3
         self.sync_rate = 1e4
 
@@ -110,7 +110,7 @@ class Mario :
         best_action = torch.argmax(next_state_Q, axis=1)
         next_Q = self.net(next_state, 'target')[np.arange(0, self.batch_size), best_action]
 
-        return (reward + (1 - done.float()) * self.gamma & next_Q).float()
+        return (reward + (1 - done.float()) * self.gamma * next_Q).float()
 
     def update_Q_online(self, td_estimate, td_target) :
         loss = self.loss_fn(td_estimate, td_target)

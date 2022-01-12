@@ -1,9 +1,9 @@
 import datetime
 import os
 import argparse
-from pathlib import Path
 
 import torch
+from torch.utils.tensorboard import SummaryWriter
 
 from gym.wrappers import FrameStack
 
@@ -42,19 +42,26 @@ if args.checkpoint :
     mario.load(args.checkpoint)
 
 logger = MetricLogger(save_dir)
+tensorboard_writer = SummaryWriter(save_dir + '/runs/')
 
-episodes = 1
+episodes = 10
+total_step = 0
 for e in range(episodes) :
     state = env.reset()
 
     while True :
+        total_step += 1
         action = mario.act(state)
 
         next_state, reward, done, info = env.step(action)
 
+        mario.cache(state, next_state, action, reward, done)
+
         q, loss = mario.learn()
+        print(mario.curr_step, q, loss)
 
         logger.log_step(reward, loss, q)
+        tensorboard_writer.add_scalar('Training Loss', loss, mario.curr_step)
 
         state = next_state
 
@@ -69,3 +76,4 @@ for e in range(episodes) :
         logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
 
 mario.save()
+tensorboard_writer.close()

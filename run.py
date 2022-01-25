@@ -58,10 +58,10 @@ for e in range(episodes) :
         mario.cache(state, next_state, action, reward, done)
 
         q, loss = mario.learn()
-        print(mario.curr_step, q, loss)
 
-        logger.log_step(reward, loss, q)
-        tensorboard_writer.add_scalar('Training Loss', loss, mario.curr_step)
+        if q != None and loss != None :
+            logger.log_step(reward, loss, q)
+            tensorboard_writer.add_scalar('Training Loss', loss, mario.curr_step-mario.burnin)
 
         state = next_state
 

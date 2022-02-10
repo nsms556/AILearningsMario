@@ -13,8 +13,8 @@ import gym_super_mario_bros
 
 from agent import Mario
 from wrapper import SkipFrame, GrayScaleObservation, ResizeObservation
-from logger import MetricLogger
 from actions import MOVEMENT
+from logger import MetricLogger
 
 env = gym_super_mario_bros.make('SuperMarioBros-1-1-v0')
 env = JoypadSpace(env, MOVEMENT)
@@ -27,6 +27,7 @@ env.reset()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint', required=False)
+parser.add_argument('--render', default=False)
 args = parser.parse_args()
 
 use_cuda = torch.cuda.is_available()
@@ -41,39 +42,43 @@ mario = Mario(state_dim=(4, 84, 84), action_dim=env.action_space.n, save_dir=sav
 if args.checkpoint :
     mario.load(args.checkpoint)
 
-logger = MetricLogger(save_dir)
-tensorboard_writer = SummaryWriter(save_dir + '/runs/')
+logger = MetricLogger()
+tensorboard_writer = SummaryWriter(save_dir + '/')
 
-episodes = 10
-total_step = 0
-for e in range(episodes) :
-    state = env.reset()
+episodes = 50
+try :
+    for e in range(episodes) :
+        state = env.reset()
 
-    while True :
-        total_step += 1
-        action = mario.act(state)
+        while True :
+            if mario.curr_step == mario.burnin :
+                print('Logging Start')
+                
+            action = mario.act(state)
+            next_state, reward, done, info = env.step(action)
 
-        next_state, reward, done, info = env.step(action)
+            mario.cache(state, next_state, action, reward, done)
 
-        mario.cache(state, next_state, action, reward, done)
+            q, loss = mario.learn()
+            if q != None and loss != None :
+                logger.log_step(reward, loss, q)
+                tensorboard_writer.add_scalar('Training Loss', loss, (mario.curr_step-mario.burnin)/mario.learn_rate)
+                tensorboard_writer.add_scalar('Q Value', q, (mario.curr_step-mario.burnin)/mario.learn_rate)
 
-        q, loss = mario.learn()
+            state = next_state
 
-        if q != None and loss != None :
-            logger.log_step(reward, loss, q)
-            tensorboard_writer.add_scalar('Training Loss', loss, mario.curr_step-mario.burnin)
+            if done or info['flag_get'] :
+                break
+            
+            if args.render :
+                env.render()
 
-        state = next_state
+        logger.log_episode()
+        if e % 5 == 0 :
+            logger.record(e, mario.exploration_rate, mario.curr_step)
+        
+finally :
+    if input('Save Current Weights? (Y/N)').lower() == 'y' :
+        mario.save()
 
-        if done or info['flag_get'] :
-            break
-
-        env.render()
-
-    logger.log_episode()
-
-    if e % 5 == 0 :
-        logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
-
-mario.save()
-tensorboard_writer.close()
+    tensorboard_writer.close()

@@ -1,3 +1,4 @@
 # dirs
 __pycache__
 checkpoints
+tensorboard

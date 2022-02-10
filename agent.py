@@ -1,5 +1,4 @@
 import random
-import os
 
 from collections import deque
 
@@ -63,17 +62,17 @@ class Mario :
         state = state.__array__()
         next_state = next_state.__array__()
 
-        state = torch.tensor(state).to(self.device)
-        next_state = torch.tensor(next_state).to(self.device)
-        action = torch.tensor([action]).to(self.device)
-        reward = torch.tensor([reward]).to(self.device)
-        done = torch.tensor([done]).to(self.device)
+        state = torch.tensor(state).cpu()
+        next_state = torch.tensor(next_state).cpu()
+        action = torch.tensor([action]).cpu()
+        reward = torch.tensor([reward]).cpu()
+        done = torch.tensor([done]).cpu()
 
         self.memory.append((state, next_state, action, reward, done, ))
 
     def recall(self) :
         batch = random.sample(self.memory, self.batch_size)
-        state, next_state, action, reward, done = map(torch.stack, zip(*batch))
+        state, next_state, action, reward, done = map(lambda x : x.to(self.device), map(torch.stack, zip(*batch)))
 
         return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
 

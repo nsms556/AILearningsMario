@@ -27,7 +27,8 @@ env.reset()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint', required=False)
-parser.add_argument('--render', default=False)
+parser.add_argument('--render', type=bool, default=False)
+parser.add_argument('-n', type=int, default=50)
 args = parser.parse_args()
 
 use_cuda = torch.cuda.is_available()
@@ -45,7 +46,7 @@ if args.checkpoint :
 logger = MetricLogger()
 tensorboard_writer = SummaryWriter(save_dir + '/')
 
-episodes = 50
+episodes = args.n
 try :
     for e in range(episodes) :
         state = env.reset()

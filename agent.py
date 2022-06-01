@@ -20,8 +20,8 @@ class Mario :
         self.save_dir = save_dir
 
         self.exploration_rate = 1
-        self.exploration_rate_decay = 0.99999975
-        self.exploration_rate_min = 0.1
+        self.exploration_rate_decay = 0.9999
+        self.exploration_rate_min = 0.01
         self.curr_step = 0
 
         self.save_rate = 5e5
@@ -30,13 +30,14 @@ class Mario :
         self.batch_size = 32
 
         self.gamma = 0.9
+        self.learning_rate = 0.0001
 
         self.net = MarioNet(self.state_dim, self.action_dim).float().to(self.device)
-        self.optimizer = optim.Adam(self.net.parameters(), lr=0.00025)
+        self.optimizer = optim.Adam(self.net.parameters(), lr=self.learning_rate)
         self.loss_fn = nn.SmoothL1Loss()
 
         self.burnin = 5000
-        self.learn_rate = 3
+        self.learn_rate = 4
         self.sync_rate = 1e4
 
     def act(self, state) :

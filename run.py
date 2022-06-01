@@ -10,18 +10,20 @@ from gym.wrappers import FrameStack
 from nes_py.wrappers import JoypadSpace
 
 import gym_super_mario_bros
+import gym_super_mario_bros.actions
 
 from agent import Mario
-from wrapper import SkipFrame, GrayScaleObservation, ResizeObservation
+from wrapper import SkipFrame, GrayScaleObservation, ResizeObservation, CustomReward
 from actions import MOVEMENT
 from logger import MetricLogger
 
 env = gym_super_mario_bros.make('SuperMarioBros-1-1-v0')
-env = JoypadSpace(env, MOVEMENT)
+env = JoypadSpace(env, gym_super_mario_bros.actions.SIMPLE_MOVEMENT)
 env = SkipFrame(env, skip=4)
 env = GrayScaleObservation(env)
 env = ResizeObservation(env, shape=84)
 env = FrameStack(env, num_stack=4)
+env = CustomReward(env)
 
 env.reset()
 
@@ -29,6 +31,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint', '-c', required=False)
 parser.add_argument('--render', '-r', type=bool, default=False)
 parser.add_argument('-n', type=int, default=50)
+parser.add_argument('--tensorboard', '-t', type=bool, default=True)
 args = parser.parse_args()
 
 use_cuda = torch.cuda.is_available()
@@ -44,7 +47,9 @@ if args.checkpoint :
     mario.load(args.checkpoint)
 
 logger = MetricLogger()
-tensorboard_writer = SummaryWriter(save_dir + '/')
+
+if args.tensorboard :
+    tensorboard_writer = SummaryWriter(save_dir + '/')
 
 episodes = args.n
 try :
@@ -63,8 +68,10 @@ try :
             q, loss = mario.learn()
             if q != None and loss != None :
                 logger.log_step(reward, loss, q)
-                tensorboard_writer.add_scalar('Training Loss', loss, (mario.curr_step-mario.burnin)/mario.learn_rate)
-                tensorboard_writer.add_scalar('Q Value', q, (mario.curr_step-mario.burnin)/mario.learn_rate)
+
+                if args.tensorboard :
+                    tensorboard_writer.add_scalar('Training Loss', loss, (mario.curr_step-mario.burnin)/mario.learn_rate)
+                    tensorboard_writer.add_scalar('Q Value', q, (mario.curr_step-mario.burnin)/mario.learn_rate)
 
             state = next_state
 
@@ -82,4 +89,5 @@ finally :
     if input('Save Current Weights? (Y/N)').lower() == 'y' :
         mario.save()
 
-    tensorboard_writer.close()
+    if args.tensorboard :
+        tensorboard_writer.close()

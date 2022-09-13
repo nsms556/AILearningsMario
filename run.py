@@ -29,8 +29,8 @@ env.reset()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint', '-c', required=False)
-parser.add_argument('--render', '-r', type=bool, default=False)
-parser.add_argument('-n', type=int, default=50)
+parser.add_argument('--render', '-r', type=bool, default=True)
+parser.add_argument('-n', type=int, default=100)
 parser.add_argument('--tensorboard', '-t', type=bool, default=True)
 args = parser.parse_args()
 

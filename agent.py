@@ -20,13 +20,13 @@ class Mario :
         self.save_dir = save_dir
 
         self.exploration_rate = 1
-        self.exploration_rate_decay = 0.9999
-        self.exploration_rate_min = 0.01
+        self.exploration_rate_decay = 0.99999975
+        self.exploration_rate_min = 0.1
         self.curr_step = 0
 
         self.save_rate = 5e5
 
-        self.memory = deque(maxlen=100000)
+        self.memory = deque(maxlen=20000)
         self.batch_size = 32
 
         self.gamma = 0.9
@@ -63,17 +63,17 @@ class Mario :
         state = state.__array__()
         next_state = next_state.__array__()
 
-        state = torch.tensor(state).cpu()
-        next_state = torch.tensor(next_state).cpu()
-        action = torch.tensor([action]).cpu()
-        reward = torch.tensor([reward]).cpu()
-        done = torch.tensor([done]).cpu()
+        state = torch.tensor(state).to(self.device)
+        next_state = torch.tensor(next_state).to(self.device)
+        action = torch.tensor([action]).to(self.device)
+        reward = torch.tensor([reward]).to(self.device)
+        done = torch.tensor([done]).to(self.device)
 
         self.memory.append((state, next_state, action, reward, done, ))
 
     def recall(self) :
         batch = random.sample(self.memory, self.batch_size)
-        state, next_state, action, reward, done = map(lambda x : x.to(self.device), map(torch.stack, zip(*batch)))
+        state, next_state, action, reward, done = map(torch.stack, zip(*batch))
 
         return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
 

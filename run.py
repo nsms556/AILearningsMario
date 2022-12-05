@@ -5,7 +5,7 @@ import argparse
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from gym.wrappers import FrameStack
+from gym.wrappers import FrameStack, GrayScaleObservation
 
 from nes_py.wrappers import JoypadSpace
 
@@ -13,12 +13,13 @@ import gym_super_mario_bros
 import gym_super_mario_bros.actions
 
 from agent import Mario
-from wrapper import SkipFrame, GrayScaleObservation, ResizeObservation, CustomReward
+from wrapper import SkipFrame, ResizeObservation, CustomReward
 from actions import MOVEMENT
 from logger import MetricLogger
 
-env = gym_super_mario_bros.make('SuperMarioBros-1-1-v0')
-env = JoypadSpace(env, gym_super_mario_bros.actions.SIMPLE_MOVEMENT)
+
+env = gym_super_mario_bros.make('SuperMarioBros-v0')
+env = JoypadSpace(env, gym_super_mario_bros.actions.RIGHT_ONLY)
 env = SkipFrame(env, skip=4)
 env = GrayScaleObservation(env)
 env = ResizeObservation(env, shape=84)
@@ -30,7 +31,7 @@ env.reset()
 parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint', '-c', required=False)
 parser.add_argument('--render', '-r', type=bool, default=True)
-parser.add_argument('-n', type=int, default=100)
+parser.add_argument('-n', type=int, default=-1)
 parser.add_argument('--tensorboard', '-t', type=bool, default=True)
 args = parser.parse_args()
 
@@ -52,8 +53,10 @@ if args.tensorboard :
     tensorboard_writer = SummaryWriter(save_dir + '/')
 
 episodes = args.n
+e = 0
 try :
-    for e in range(episodes) :
+    while True :
+        e += 1
         state = env.reset()
 
         while True :
@@ -72,6 +75,7 @@ try :
                 if args.tensorboard :
                     tensorboard_writer.add_scalar('Training Loss', loss, (mario.curr_step-mario.burnin)/mario.learn_rate)
                     tensorboard_writer.add_scalar('Q Value', q, (mario.curr_step-mario.burnin)/mario.learn_rate)
+                    tensorboard_writer.add_scalar('Reward', reward, (mario.curr_step-mario.burnin)/mario.learn_rate)
 
             state = next_state
 
@@ -84,6 +88,9 @@ try :
         logger.log_episode()
         if e % 5 == 0 :
             logger.record(e, mario.exploration_rate, mario.curr_step)
+
+        if episodes > 0 and e > episodes :
+           break
         
 finally :
     if input('Save Current Weights? (Y/N)').lower() == 'y' :

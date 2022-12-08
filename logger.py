@@ -32,8 +32,8 @@ class TensorboardLogger :
 
         self.writer.add_scalar('Episode Total Reward', self.curr_ep_reward)
         self.writer.add_scalar('Episode Length', self.curr_ep_length)
-        self.writer.add_scalar('Episode Average Loss' : ep_avg_loss)
-        self.writer.add_scalar('Episode Average Q' : ep_avg_q)
+        self.writer.add_scalar('Episode Average Loss', ep_avg_loss)
+        self.writer.add_scalar('Episode Average Q', ep_avg_q)
         
     def init_episode(self) :
         self.curr_ep_reward = 0.0

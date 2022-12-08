@@ -30,7 +30,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint', '-c', required=False)
 parser.add_argument('--render', '-r', type=bool, default=True)
 parser.add_argument('-n', type=int, default=-1)
-parser.add_argument('--tensorboard', '-t', type=bool, default=True)
 args = parser.parse_args()
 
 save_dir = './checkpoints/{}'.format(datetime.datetime.now().strftime('%Y-%m-%dT%H%M%S'))

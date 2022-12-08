@@ -22,7 +22,7 @@ class TensorboardLogger :
             self.curr_ep_q += q
             self.curr_ep_loss_length += 1
 
-    def log_episode(self) :
+    def log_episode(self, e) :
         if self.curr_ep_loss_length == 0 :
             ep_avg_loss = 0
             ep_avg_q = 0
@@ -30,10 +30,10 @@ class TensorboardLogger :
             ep_avg_loss = np.round(self.curr_ep_loss / self.curr_ep_loss_length, 5)
             ep_avg_q = np.round(self.curr_ep_q / self.curr_ep_loss_length, 5)
 
-        self.writer.add_scalar('Episode Total Reward', self.curr_ep_reward)
-        self.writer.add_scalar('Episode Length', self.curr_ep_length)
-        self.writer.add_scalar('Episode Average Loss', ep_avg_loss)
-        self.writer.add_scalar('Episode Average Q', ep_avg_q)
+        self.writer.add_scalar('Episode Total Reward', self.curr_ep_reward, e)
+        self.writer.add_scalar('Episode Length', self.curr_ep_length, e)
+        self.writer.add_scalar('Episode Average Loss', ep_avg_loss, e)
+        self.writer.add_scalar('Episode Average Q', ep_avg_q, e)
         
     def init_episode(self) :
         self.curr_ep_reward = 0.0

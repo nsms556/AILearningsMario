@@ -70,7 +70,7 @@ try :
             if args.render :
                 env.render()
 
-        logger.log_episode()
+        logger.log_episode(e)
 
         if e % 5 == 0 :
             logger.record(e, mario.exploration_rate, mario.curr_step)

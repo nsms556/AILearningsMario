@@ -2,7 +2,61 @@ import time
 import datetime
 
 import numpy as np
+from torch.utils.tensorboard import SummaryWriter
 
+
+class TensorboardLogger :
+    def __init__(self, save_dir) -> None:
+        self.writer = SummaryWriter(save_dir + '/')
+
+        self.init_episode()
+
+        self.record_time = time.time()
+    
+    def log_step(self, reward, loss, q) :
+        self.curr_ep_reward += reward
+        self.curr_ep_length += 1
+        
+        if loss :
+            self.curr_ep_loss += loss
+            self.curr_ep_q += q
+            self.curr_ep_loss_length += 1
+
+    def log_episode(self) :
+        if self.curr_ep_loss_length == 0 :
+            ep_avg_loss = 0
+            ep_avg_q = 0
+        else :
+            ep_avg_loss = np.round(self.curr_ep_loss / self.curr_ep_loss_length, 5)
+            ep_avg_q = np.round(self.curr_ep_q / self.curr_ep_loss_length, 5)
+
+        self.writer.add_scalar('Episode Total Reward', self.curr_ep_reward)
+        self.writer.add_scalar('Episode Length', self.curr_ep_length)
+        self.writer.add_scalar('Episode Average Loss' : ep_avg_loss)
+        self.writer.add_scalar('Episode Average Q' : ep_avg_q)
+        
+    def init_episode(self) :
+        self.curr_ep_reward = 0.0
+        self.curr_ep_length = 0
+        self.curr_ep_loss = 0.0
+        self.curr_ep_q = 0.0
+        self.curr_ep_loss_length = 0
+
+    def record(self, episode, epsilon, step) :
+        last_record_time = self.record_time
+        self.record_time = time.time()
+        time_since_last_record = np.round(self.record_time - last_record_time, 3)
+
+        print(
+            f'Episode {episode} - '
+            f'Step {step} - '
+            f'Epsilon {epsilon} - '
+            f'Time Delta {time_since_last_record} - '
+            f'Time {datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")}'
+        )
+
+    def close(self) :
+        self.writer.close()
 
 class MetricLogger :
     def __init__(self) -> None:

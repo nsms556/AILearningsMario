@@ -125,7 +125,7 @@ class Mario :
         self.net.target.load_state_dict(self.net.online.state_dict())
 
     def save(self) :
-        save_path = self.save_dir + '/Mario_Net_{}.pt'.format(int(self.curr_step // self.save_rate))
+        save_path = self.save_dir + '/Mario_Net.pt'
 
         torch.save(dict(model=self.net.state_dict(), exploration_rate=self.exploration_rate), save_path)
 
